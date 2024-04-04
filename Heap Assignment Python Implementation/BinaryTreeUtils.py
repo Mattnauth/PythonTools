@@ -7,14 +7,14 @@ def count(node) -> int:
     return count(node.left()) + count(node.right()) + 1
 
 def height(node) -> int:
-    """Recursively determines the height of a bindary tree rooted at node."""
+    """Recursively determines the height of a binary tree rooted at node."""
     if(node == None):
         return 0
     return max(height(node.left()), height(node.right())) + 1
 
 
 def insertStringAtIndex(index: int, s: str, insert:str) -> str:
-    """Takes string s and returns a copy with string "insert" overwritten, centered at index."""
+    """Takes string s and returns a copy with string insert overwritten, centered at index."""
     left_chars = round(len(insert)/2)
     left_idx = index - left_chars
     return s[:left_idx] + insert + s[left_idx+len(insert):]  
@@ -29,6 +29,10 @@ def printTreeDiagram(root):
     printTreeDiagramFromLTRArray(ltr_array)
 
 def printTreeDiagramFromLTRArray(array:list):
+    """Takes a left-to-right, level-by-level list of nodes in a binary tree structure and
+    prints a tree diagram to the console. Values are surrounded by parenthesis to indicate a node,
+    and slashes roughly indicate connecting edges. Values of none in the array will be renderd as blank spaces
+    surrounded by parenthesis."""
     trimmed_array = [item for item in array if item != None]
     array = ["" if item == None else item for item in array]
 
@@ -91,7 +95,9 @@ def printTreeDiagramFromLTRArray(array:list):
 def leftToRightTraversal(root, array:list):
     """Creates a left-to-right, level-by-level array of values for a binary tree rooted at root.  
     Empty nodes will be inserted into the array with value None 
-    to form a complete binary tree based on the root's height."""
+    to form a complete binary tree based on the root's height.
+    Root node object must support .left() .right() and .value() methods which return left/right child nodes
+    and the value of the node, respectively."""
     levels = height(root)
     array.append(root)
     level_start_index = 0
