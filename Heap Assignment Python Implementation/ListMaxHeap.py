@@ -11,8 +11,8 @@ class ListMaxHeap:
     
     #Internal functions that operate on the list
     def value(self, index:int):
-        '''Returns the value at a given index, or NOne if index is not valid.'''
-        if (index == None) or (index < 0) or (index > self.numItems()):
+        '''Returns the value at a given index, or None if index is not valid.'''
+        if (index == None) or (index < 0) or (index >= self.numItems()):
             return None
         return self.__heap_array[index]
     
@@ -37,16 +37,17 @@ class ListMaxHeap:
         return self.__heap_array[0]
     
     def removeMax(self):
-        removed_value = self.__heap_array[0]
         self.swap(0,self.numItems()-1)
+        removed_value = self.__heap_array.pop()
         self.sink(0)
         return removed_value
     
     #Navigation functions for moving through the heap as a tree
     def parent(self, child_index:int) -> int:
         """Returns the index of the child's parent. Returns None if child_index is invalid or index is the root."""
-        index = (child_index-1)//2
-        return index if (index < self.numItems() and index >= 0) else None
+        if(child_index == 0):
+            return None
+        return (child_index-1)//2
     
     def left(self, parent_index:int) -> int:
         """Returns the index of a parent's left child.  Returns None if there is no left child."""
@@ -80,11 +81,12 @@ class ListMaxHeap:
     def bubble(self, index):
         '''Bubbles up the value at target index until there are no lesser values above it.
         Generally called on the last index after an add, to re-validate the heap.'''
-        target = self.parent(index)
-        while(target != None and self.value(index) > self.value(target)):
-            self.swap(index,target)
-            index = target
-            target = self.parent(index)
+        bubble_idx = index
+        parent_idx = self.parent(bubble_idx)
+        while (parent_idx != None) and (self.value(bubble_idx) > self.value(parent_idx)):
+            self.swap(bubble_idx,parent_idx)
+            bubble_idx = parent_idx
+            parent_idx = self.parent(bubble_idx)
 
     def greaterChild(self, index) -> int|None:
         '''Returns None if the given index is greater than both children, otherwise returns the index of the greatest child.'''
@@ -148,18 +150,23 @@ if __name__ == "__main__":
         user_input = ''
         exit_flag = False
         while(not exit_flag):
-            user_input = input()
+            print("Enter command: ", end='')
+            user_input = input().strip()
             user_input_array = user_input.split(" ")
+            if len(user_input_array) > 1:
+                try:
+                    user_input_array[1] = int(user_input_array[1])
+                except:
+                    user_input_array = user_input_array[:1]
             match user_input_array[0]:
                 case "add":
-                    if len(user_input_array) < 1:
-                        break
-                    target_heap.insert(user_input_array[1])
-                    print(f"Added {user_input_array[1]}, new heap diagram after bubbling:")
-                    BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
+                    if (len(user_input_array) > 1) and (type(user_input_array[1]) == int):
+                        target_heap.insert(user_input_array[1])
+                        print(f"Added {user_input_array[1]}, new tree diagram of heap after bubbling:")
+                        BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
                 case "remove":
                     return_value = target_heap.removeMax()
-                    print(f"Removed {return_value}, new tree heap diagram after sinking:")
+                    print(f"Removed {return_value}, new tree diagram of heap after sinking:")
                     BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
                 case "print":
                     BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
@@ -167,6 +174,8 @@ if __name__ == "__main__":
                     pass
                 case "exit":
                     exit_flag = True
+                # case "parent":
+                #     print(target_heap.parent(user_input_array[1]))
 
     # testHeap([])
     #testHeap([92, 48, 94, 37, 32, 76, 14, 84, 50, 79])
