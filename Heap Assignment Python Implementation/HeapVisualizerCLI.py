@@ -34,7 +34,7 @@ if __name__ == "__main__":
                         print(f"Added {user_input_array[1]}, new tree diagram of heap after bubbling:")
                         BinaryTreeUtils.printTreeDiagram(HN.HeapNode(0,target_heap))
                 case "remove":
-                    return_value = target_heap.removeMax()
+                    return_value = target_heap.remove_max()
                     print(f"Removed {return_value}, new tree diagram of heap after sinking:")
                     BinaryTreeUtils.printTreeDiagram(HN.HeapNode(0,target_heap))
                 case "print":
