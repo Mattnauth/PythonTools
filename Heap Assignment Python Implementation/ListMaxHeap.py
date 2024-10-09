@@ -1,13 +1,10 @@
-import math
-import BinaryTreeUtils
-
 class ListMaxHeap:
     def __init__(self, initial_values:list = []):
         self.__heap_array:list = []
         for item in initial_values:
             self.__heap_array.append(item)
 
-        self.heapify()
+        self.build_max_heap()
     
     #Internal functions that operate on the list
     def value(self, index:int):
@@ -27,10 +24,12 @@ class ListMaxHeap:
     
     #Heap API functions    
     def array(self):
+        '''Returns a copy of the internal list containing all the heap elements.'''
         return self.__heap_array.copy()
     
-    def insert(self, value):
-        self.__heap_array.append(value)
+    def insert(self, element):
+        '''Inserts 'element' into the heap and heapifies the heap.'''
+        self.__heap_array.append(element)
         self.bubble(self.numItems()-1)
 
     def max(self):
@@ -45,7 +44,7 @@ class ListMaxHeap:
     #Navigation functions for moving through the heap as a tree
     def parent(self, child_index:int) -> int:
         """Returns the index of the child's parent. Returns None if child_index is invalid or index is the root."""
-        if(child_index == 0):
+        if(child_index == 0 or child_index >= self.numItems()):
             return None
         return (child_index-1)//2
     
@@ -60,7 +59,7 @@ class ListMaxHeap:
         return index if (index < self.numItems()) else None
     
     #Utility functions for managing the heap
-    def heapify(self):
+    def build_max_heap(self):
         """Runs through the heap in reverse and sinks values to validate the whole max heap.
         Only called once when the heap is initialized from a list."""
         if(self.numItems() == 0):
@@ -88,25 +87,33 @@ class ListMaxHeap:
             bubble_idx = parent_idx
             parent_idx = self.parent(bubble_idx)
 
-    def greaterChild(self, index) -> int|None:
+    def greaterChild(self, parent_idx) -> int|None:
         '''Returns None if the given index is greater than both children, otherwise returns the index of the greatest child.'''
-        left = self.left(index)
-        right = self.right(index)
-        if(left != None and right != None):
+        left_child_idx, right_child_idx = self.left(parent_idx), self.right(parent_idx)
+        values = [
+            (self.value(parent_idx), parent_idx),
+            (self.value(left_child_idx), left_child_idx),
+            (self.value(right_child_idx), right_child_idx),
+        ]
+        values = [x for x in values if x[0] is not None]
+        min_idx = min(values)[1]
+
+        return None if min_idx == parent_idx else min_idx
+        if(left_child_id != None and right_child_idx != None):
             #Case where both children exist, check if either is greater than the other and index (parent)
-            if(self.value(left) >= self.value(right) and self.value(left) > self.value(index)):
-                return left
-            elif(self.value(right) >= self.value(left) and self.value(right) > self.value(index)):
-                return right
+            if(self.value(left_child_id) >= self.value(right_child_idx) and self.value(left_child_id) > self.value(parent_idx)):
+                return left_child_id
+            elif(self.value(right_child_idx) >= self.value(left_child_id) and self.value(right_child_idx) > self.value(parent_idx)):
+                return right_child_idx
             else:
                 #If neither child is greater, return None
                 return None
-        elif(left != None and self.value(left) > self.value(index)):
+        elif(left_child_id != None and self.value(left_child_id) > self.value(parent_idx)):
             #Case where left child exists and is greater than index (parent)
-            return left
-        elif(right != None and self.value(right) > self.value(index)):
+            return left_child_id
+        elif(right_child_idx != None and self.value(right_child_idx) > self.value(parent_idx)):
             #Case where right child exists and is greater than index (parent)
-            return right
+            return right_child_idx
         else:
             #Case where neither child exists or neither child is less than index, return None
             return None
@@ -114,73 +121,4 @@ class ListMaxHeap:
     #Side effect (e.g print) functions    
     def __str__(self) -> str:
         return str(self.__heap_array)
-
-class HeapNode:
-    # heap: ListMaxHeap = None
-    # index: int = None
-    def __init__(self, index:int, heap:ListMaxHeap):
-        self.heap: ListMaxHeap = heap
-        self.index: int = index
-
-    def left(self):
-        if(self.heap.left(self.index) == None):
-            return None
-        return HeapNode(self.heap.left(self.index), self.heap)
-    def right(self):
-        if(self.heap.right(self.index) == None):
-            return None
-        return HeapNode(self.heap.right(self.index), self.heap)
-    def value(self):
-        return self.heap.value(self.index)
-
-if __name__ == "__main__":
-    def testHeap(initial_values:list):
-        print("Testing heap creation with initial elements:", initial_values)
-        test_heap = ListMaxHeap(initial_values)
-        print("Array view of test heap:")
-        print(test_heap)
-        print("Tree view of test heap:")
-        BinaryTreeUtils.printTreeDiagramFromLTRArray(test_heap.array())
-        BinaryTreeUtils.printTreeDiagram(HeapNode(0,test_heap))
-        print("Number of Elements in test_heap is:", test_heap.numItems())
-        print("Count() of root of test_heap is:", BinaryTreeUtils.count(HeapNode(0,test_heap)))
-        
-
-    def listen(target_heap:ListMaxHeap):
-        user_input = ''
-        exit_flag = False
-        while(not exit_flag):
-            print("Enter command: ", end='')
-            user_input = input().strip()
-            user_input_array = user_input.split(" ")
-            if len(user_input_array) > 1:
-                try:
-                    user_input_array[1] = int(user_input_array[1])
-                except:
-                    user_input_array = user_input_array[:1]
-            match user_input_array[0]:
-                case "add":
-                    if (len(user_input_array) > 1) and (type(user_input_array[1]) == int):
-                        target_heap.insert(user_input_array[1])
-                        print(f"Added {user_input_array[1]}, new tree diagram of heap after bubbling:")
-                        BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
-                case "remove":
-                    return_value = target_heap.removeMax()
-                    print(f"Removed {return_value}, new tree diagram of heap after sinking:")
-                    BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
-                case "print":
-                    BinaryTreeUtils.printTreeDiagram(HeapNode(0,target_heap))
-                case "note:":
-                    pass
-                case "exit":
-                    exit_flag = True
-                # case "parent":
-                #     print(target_heap.parent(user_input_array[1]))
-
-    # testHeap([])
-    #testHeap([92, 48, 94, 37, 32, 76, 14, 84, 50, 79])
-    print("Heap Visualizer V1.0 by Matthew Nauth written in Python 3.11.4")
-    print("Commands: Add [int], Remove, Print, Note: [str], Exit")
-    heap:ListMaxHeap = ListMaxHeap([])
-    listen(heap)
 
