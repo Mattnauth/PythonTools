@@ -4,7 +4,7 @@ class ListMaxHeap:
         (or an empty heap if the list is empty).
         Optional: element_to_key function may be supplied that takes the
         element and returns its key (otherwise elements will be compared directly).'''
-        self.element_to_key = None
+        self.element_to_key = element_to_key
         self.__heap_array:list = []
         for item in initial_elements:
             self.__heap_array.append(item)
@@ -17,7 +17,7 @@ class ListMaxHeap:
         if (index == None) or (index < 0) or (index >= self.numItems()):
             return None
         if self.element_to_key != None:
-            return self.element_to_key(index)
+            return self.element_to_key(self.__heap_array[index])
         return self.__heap_array[index]
     
     def swap(self,index1:int,index2:int):
@@ -77,7 +77,7 @@ class ListMaxHeap:
         Only called once when the heap is initialized from a list."""
         if(self.numItems() == 0):
             return
-        for index in range(self.parent(self.numItems()-1), -1,-1):
+        for index in range(self.parent(self.lastIndex()), -1,-1):
             if(self.greaterChild(index) != None):
                 self.max_heapify(index)
 
