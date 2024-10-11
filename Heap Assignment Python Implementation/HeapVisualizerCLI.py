@@ -30,7 +30,7 @@ if __name__ == "__main__":
             match user_input_array[0]:
                 case "add":
                     if (len(user_input_array) > 1) and (type(user_input_array[1]) == int):
-                        target_heap.insert(user_input_array[1])
+                        target_heap.max_heap_insert(user_input_array[1])
                         print(f"Added {user_input_array[1]}, new tree diagram of heap after bubbling:")
                         BinaryTreeUtils.printTreeDiagram(HN.HeapNode(0,target_heap))
                 case "remove":

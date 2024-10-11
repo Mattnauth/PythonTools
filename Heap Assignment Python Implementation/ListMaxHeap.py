@@ -1,45 +1,58 @@
 class ListMaxHeap:
-    def __init__(self, initial_values:list = []):
+    def __init__(self, initial_elements:list = [], element_to_key = None):
+        '''Creates a max-heap from the supplied list of initial elements
+        (or an empty heap if the list is empty).
+        Optional: element_to_key function may be supplied that takes the
+        element and returns its key (otherwise elements will be compared directly).'''
+        self.element_to_key = None
         self.__heap_array:list = []
-        for item in initial_values:
+        for item in initial_elements:
             self.__heap_array.append(item)
 
         self.build_max_heap()
     
     #Internal functions that operate on the list
-    def value(self, index:int):
-        '''Returns the value at a given index, or None if index is not valid.'''
+    def key(self, index:int):
+        '''Returns the key of the object at a given index, or None if index is not valid.'''
         if (index == None) or (index < 0) or (index >= self.numItems()):
             return None
+        if self.element_to_key != None:
+            return self.element_to_key(index)
         return self.__heap_array[index]
     
     def swap(self,index1:int,index2:int):
-        """Swaps the values at the given indices."""
-        temp = self.__heap_array[index1]
-        self.__heap_array[index1] = self.__heap_array[index2]
-        self.__heap_array[index2] = temp
+        """Swaps the objects at the given indices."""
+        self.__heap_array[index1], self.__heap_array[index2] =\
+            self.__heap_array[index2], self.__heap_array[index1]
 
-    def numItems(self):
+    def numItems(self) -> int:
+        '''Returns the number of items in the heap.'''
         return len(self.__heap_array)
+
+    def lastIndex(self) -> int|None:
+        '''Returns the index of the last item in the heap, or None the heap is empty.'''
+        return self.numItems()-1 if self.numItems() > 0 else None 
     
     #Heap API functions    
     def array(self):
         '''Returns a copy of the internal list containing all the heap elements.'''
         return self.__heap_array.copy()
     
-    def insert(self, element):
-        '''Inserts 'element' into the heap and heapifies the heap.'''
+    def max_heap_insert(self, element):
+        '''Inserts new object 'element' into the heap and validates the heap.'''
         self.__heap_array.append(element)
-        self.bubble(self.numItems()-1)
+        self.max_heap_validate_idx(self.lastIndex())
 
     def max(self):
+        '''Returns the object with the max key in the heap, without removing it.'''
         return self.__heap_array[0]
     
     def removeMax(self):
+        '''Removes and returns the object with the max key in the heap and validates the heap.'''
         self.swap(0,self.numItems()-1)
-        removed_value = self.__heap_array.pop()
-        self.sink(0)
-        return removed_value
+        max = self.__heap_array.pop()
+        self.max_heapify(0)
+        return max
     
     #Navigation functions for moving through the heap as a tree
     def parent(self, child_index:int) -> int:
@@ -66,57 +79,45 @@ class ListMaxHeap:
             return
         for index in range(self.parent(self.numItems()-1), -1,-1):
             if(self.greaterChild(index) != None):
-                self.sink(index)
+                self.max_heapify(index)
 
-    def sink(self,index):
+    def max_heapify(self,index):
         '''Sinks the value at target index until there are no greater values in its children.
         Generally called on index zero after a remove, to re-validate the heap.'''
-        target = self.greaterChild(index)
-        while(target != None):
-            self.swap(index,target)
-            index = target
-            target = self.greaterChild(index)
+        target_idx = self.greaterChild(index)
+        while(target_idx != None):
+            self.swap(index,target_idx)
+            index = target_idx
+            target_idx = self.greaterChild(index)
 
-    def bubble(self, index):
-        '''Bubbles up the value at target index until there are no lesser values above it.
-        Generally called on the last index after an add, to re-validate the heap.'''
-        bubble_idx = index
-        parent_idx = self.parent(bubble_idx)
-        while (parent_idx != None) and (self.value(bubble_idx) > self.value(parent_idx)):
-            self.swap(bubble_idx,parent_idx)
-            bubble_idx = parent_idx
-            parent_idx = self.parent(bubble_idx)
+
+    def max_heap_validate_idx(self, target_idx):
+        '''Should be called when the element at the target index has been changed or added.
+        Re-checks the key of the element at the target index and
+        heapifies or bubbles up the element if/as needed to re-validate the heap.'''
+        parent_idx = self.parent(target_idx)
+        if (parent_idx != None) and (self.key(target_idx) > self.key(parent_idx)):
+            while (parent_idx != None) and (self.key(target_idx) > self.key(parent_idx)):
+                self.swap(target_idx,parent_idx)
+                target_idx = parent_idx
+                parent_idx = self.parent(target_idx)
+        else:
+            self.max_heapify(target_idx)
 
     def greaterChild(self, parent_idx) -> int|None:
         '''Returns None if the given index is greater than both children, otherwise returns the index of the greatest child.'''
-        left_child_idx, right_child_idx = self.left(parent_idx), self.right(parent_idx)
-        values = [
-            (self.value(parent_idx), parent_idx),
-            (self.value(left_child_idx), left_child_idx),
-            (self.value(right_child_idx), right_child_idx),
+        left_child_idx = self.left(parent_idx)
+        right_child_idx = self.right(parent_idx)
+        keys = [
+            (self.key(parent_idx), parent_idx),
+            (self.key(left_child_idx), left_child_idx),
+            (self.key(right_child_idx), right_child_idx),
         ]
-        values = [x for x in values if x[0] is not None]
-        min_idx = min(values)[1]
+        keys = [x for x in keys if x[0] is not None]
+        max_idx = None
+        max_idx = max(keys)[1] if len(keys) > 0 else None
 
-        return None if min_idx == parent_idx else min_idx
-        if(left_child_id != None and right_child_idx != None):
-            #Case where both children exist, check if either is greater than the other and index (parent)
-            if(self.value(left_child_id) >= self.value(right_child_idx) and self.value(left_child_id) > self.value(parent_idx)):
-                return left_child_id
-            elif(self.value(right_child_idx) >= self.value(left_child_id) and self.value(right_child_idx) > self.value(parent_idx)):
-                return right_child_idx
-            else:
-                #If neither child is greater, return None
-                return None
-        elif(left_child_id != None and self.value(left_child_id) > self.value(parent_idx)):
-            #Case where left child exists and is greater than index (parent)
-            return left_child_id
-        elif(right_child_idx != None and self.value(right_child_idx) > self.value(parent_idx)):
-            #Case where right child exists and is greater than index (parent)
-            return right_child_idx
-        else:
-            #Case where neither child exists or neither child is less than index, return None
-            return None
+        return None if max_idx == parent_idx else max_idx
         
     #Side effect (e.g print) functions    
     def __str__(self) -> str:
